@@ -1,4 +1,4 @@
-#import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import time
 from datetime import datetime
 import requests
@@ -35,31 +35,25 @@ class LEDcircle():
 
 # for testing purposes
 def do_lighting(percent):
-
     pins = [18,23]
-    tpercent = percent*len(pins)
-    
+    tpercent = percent*len(pins)   
     pwms = {}
     for i in range(len(pins)):
-        pwms[str(i)] = 0
-        
+        pwms[str(i)] = 0    
     pinsp = [min(1,max(0,tpercent-x+1)) for x in range(1,len(pins)+1)]
     pinsp = [int(x*100) for x in pinsp]
-    
     for i in range(len(pins)):   
         pwms[str(i)] = pinsp[i]
-    
     return pwms
-    #print([pwms[str(i)] for i in range(len(pins))])
+
 
 	
 #if __name__ == '__main__':
  
-# set the actual time here
-atime = "14:27:00"
-atime = ""
+
+
 sec_circle = LEDcircle()
-sec_circle.pins = []#[18,23,24]
+sec_circle.pins = [18,23,24]
 sec_circle.init_pins()
 
 min_circle = LEDcircle()
@@ -74,14 +68,30 @@ day_circle = LEDcircle()
 day_circle.pins = []
 day_circle.init_pins()
 
+ def destroy_all():
+    # turn the power off to the pins
+    sec_circle.destroy()
+    min_circle.destroy()
+    hour_circle.destroy()
+    day_circle.destroy()
+    GPIO.cleanup()
+
 
 sih = 60*60
 sid = sih*24
 
+# set the actual time here
+atime = "14:27:00"
+atime = ""
 try:
-    url = "http://worldclockapi.com/api/json/est/now"
+    # url = "http://worldclockapi.com/api/json/est/now"
+    # thepage = requests.get(url)
+    # atime = thepage.text.split("currentDateTime\":")[-1].split("\",\"")[0].split("T")[-1].split("-")[0] + ":" + time.strftime("%S")
+    # ats = time.mktime(datetime.strptime(time.strftime("%Y.%m.%d") + "." + atime,"%Y.%m.%d.%H:%M:%S").timetuple())
+
+    url = "https://www.timeanddate.com/worldclock/fullscreen.html?n=77"
     thepage = requests.get(url)
-    atime = thepage.text.split("currentDateTime\":")[-1].split("\",\"")[0].split("T")[-1].split("-")[0] + ":" + time.strftime("%S")
+    atime = thepage.text.split("<div id=i_time>")[-1].split("</div>")[0][:8]
     ats = time.mktime(datetime.strptime(time.strftime("%Y.%m.%d") + "." + atime,"%Y.%m.%d.%H:%M:%S").timetuple())
 except:
     try:
@@ -131,34 +141,27 @@ try:
         percents.append((cumulative_seconds)/(sid)) # / number of seconds in a day
         
         # actual calls for doing the lighting
-        #sec_circle.do_lighting(percents[0])
-        #min_circle.do_lighting(percents[1])
-        #hour_circle.do_lighting(percents[2])
-        #day_circle.do_lighting(percents[3])
+        sec_circle.do_lighting(percents[0])
+        min_circle.do_lighting(percents[1])
+        hour_circle.do_lighting(percents[2])
+        day_circle.do_lighting(percents[3])
 
 
-        #sec_circle.do_lighting(percents[0])
-        p_S = do_lighting(percents[0])
-        p_M = do_lighting(percents[1])
-        p_H = do_lighting(percents[2])
-        p_D = do_lighting(percents[3])
-        
-        print(ts_time)
-        print(" ".join([str(p_S[x]) for x in p_S]).rjust(15) + " - percent " + str(percents[0]) + " - millisecond " + MS)
-        print(" ".join([str(p_M[x]) for x in p_M]).rjust(15) + " - percent " + str(percents[1]) + " - second " + S)
-        print(" ".join([str(p_H[x]) for x in p_H]).rjust(15) + " - percent " + str(percents[2]) + " - minute " + M)
-        print(" ".join([str(p_D[x]) for x in p_D]).rjust(15) + " - percent " + str(percents[3]) + " - hour " + H)
-        
+        # for debugging
+        # p_S = do_lighting(percents[0])
+        # p_M = do_lighting(percents[1])
+        # p_H = do_lighting(percents[2])
+        # p_D = do_lighting(percents[3])
+        # print(ts_time)
+        # print(" ".join([str(p_S[x]) for x in p_S]).rjust(15) + " - percent " + str(percents[0]) + " - millisecond " + MS)
+        # print(" ".join([str(p_M[x]) for x in p_M]).rjust(15) + " - percent " + str(percents[1]) + " - second " + S)
+        # print(" ".join([str(p_H[x]) for x in p_H]).rjust(15) + " - percent " + str(percents[2]) + " - minute " + M)
+        # print(" ".join([str(p_D[x]) for x in p_D]).rjust(15) + " - percent " + str(percents[3]) + " - hour " + H)
         #time.sleep(.5)
 
 
     
 except KeyboardInterrupt:
-    #turn the power off to the pins
-    #sec_circle.destroy()
-    #min_circle.destroy()
-    #hour_circle.destroy()
-    #day_circle.destroy()
-    #GPIO.cleanup()
+    destroy_all()
     pass
 
