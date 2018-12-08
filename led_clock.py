@@ -12,21 +12,31 @@ class LEDcircle():
         super().__init__()
         self.pins = []
         self.pwms = {}
+        self.pwms2 = {}
+        self.maxp = 1
 
     def init_pins(self):
         for i in range(len(self.pins)):
             GPIO.setup(self.pins[i], GPIO.OUT)
             GPIO.output(self.pins[i], GPIO.HIGH)
-            self.pwms[str(i)] = GPIO.PWM(self.pins[i], 2**10)
+            self.pwms[str(i)] = GPIO.PWM(self.pins[i], 2000)#2**10)
             self.pwms[str(i)].start(0)
+            self.pwms2[str(i)] = 0
 
     def do_lighting(self,percent):
         tpercent = percent*len(self.pins)
         pinsp = [min(1,max(0,tpercent-x+1)) for x in range(1,len(self.pins)+1)]
-        pinsp = [int(x*100) for x in pinsp]
-        for i in range(len(self.pins)):   
-            #pwms[str(i)] = pinsp[i]
-            self.pwms[str(i)].ChangeDutyCycle(pinsp[i]) # I think this is the function
+        pinsp = [int(x * 100 * self.maxp) for x in pinsp]
+        for i in range(len(self.pins)):
+            #if i == 0:
+            #    print(pinsp[i])
+            
+            if pinsp[i] != self.pwms2[str(i)]:
+                self.pwms[str(i)].ChangeDutyCycle(pinsp[i])
+                self.pwms2[str(i)] = pinsp[i]
+                #self.pwms[str(i)].start(pinsp[i])
+                #if i == 0:
+                #    print(pinsp[i])
             
     def destroy(self):
         for i in range(len(self.pins)): 
@@ -50,25 +60,26 @@ def do_lighting(percent):
 	
 #if __name__ == '__main__':
  
-
+GPIO.setmode(GPIO.BCM)
 
 sec_circle = LEDcircle()
+sec_circle.maxp = .5
 sec_circle.pins = [18,23,24]
 sec_circle.init_pins()
 
 min_circle = LEDcircle()
-min_circle.pins = []
+min_circle.pins = []#[18,23,24]
 min_circle.init_pins()
 
 hour_circle = LEDcircle()
-hour_circle.pins = []
+hour_circle.pins = []#[18,23,24]
 hour_circle.init_pins()
 
 day_circle = LEDcircle()
 day_circle.pins = []
 day_circle.init_pins()
 
- def destroy_all():
+def destroy_all():
     # turn the power off to the pins
     sec_circle.destroy()
     min_circle.destroy()
