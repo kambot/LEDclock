@@ -5,10 +5,14 @@
 
 #setwd("C:/dev/LEDclock")
 
-pdf("rpi_clock.pdf")
+#pdf("rpi_clock.pdf")
+d = 0.7957748
+png("rpi_clock.png",units="in",width=12.0*d, height=12.0*d, res=600)
 
-lim = .5
-plot(0,type="n",main="",xlab="",ylab="",ylim=c(-lim,lim),xlim=c(-lim,lim),col="white",yaxt="n",xaxt="n")
+lim = .5*d
+par(oma=c(0, 0, 0, 0))
+par(mar=c(0, 0, 0, 0))
+plot(0,type="n",main="",xlab="",ylab="",ylim=c(-lim,lim),xlim=c(-lim,lim),col="white",yaxt="n",xaxt="n", xaxs="i", yaxs="i")
 # axis(2, axTicks(2), format(axTicks(2), scientific = F,big.mark=',')) 
 
 abline(h=0,col="gray")
@@ -26,7 +30,7 @@ tube = function(c){
   return(r)
 }
 
-lines(.5*cos(theta),.5*sin(theta),lwd=3) # outer edge of the base board
+#lines((5.5/12.0)*cos(theta),(5.5/12.0)*sin(theta),lwd=3) # outer edge of the base board
 tube(2.5)
 tube(2)
 tube(1.5)
